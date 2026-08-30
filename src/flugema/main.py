@@ -74,7 +74,11 @@ def global_configs(is_auth=False):
             ui.button(on_click=lambda: disconnect(), icon='logout').props('flat color=white')
 
     with ui.footer(value=True) as footer:
-        ui.html('&copy; 2026 Flugema - Licence <a href="https://www.gnu.org/licenses/gpl-3.0.fr.html">GPL v3.0</a> - <a href="https://github.com/Xeladaren/flugema">sources</a>', sanitize=False).classes('[&_a]:underline')
+        ui.html('''
+            &copy; 2026 Flugema - 
+            Licence <a href="https://www.gnu.org/licenses/gpl-3.0.fr.html">GPL v3.0</a> - 
+            <a href="https://github.com/Xeladaren/flugema">Sources</a>
+        ''', sanitize=False).classes('[&_a]:underline')
 
     if is_auth:
 
@@ -174,7 +178,7 @@ def main() -> None:
     SECRET_KEY = get_secret_key()
 
     try:
-        logger.info(f"Server started on {HOST}:{PORT}")
+        logger.info(f"Server started on {HOST}:{PORT} (Proxy allowed ips:{ALLOW_IPS})")
         ui.run(
             storage_secret=SECRET_KEY, 
             reload=False, 
