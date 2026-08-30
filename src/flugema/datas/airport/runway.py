@@ -1,0 +1,129 @@
+import csv
+import datetime
+import http.client
+import io
+import os.path
+import sqlite3
+import urllib
+
+from functools import lru_cache
+
+from .ourairports import OurAirports
+
+NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
+DATABASE_PATH = os.path.join(NICEGUI_STORAGE_PATH, "database.db")
+
+class Runway():
+
+    @classmethod
+    def update(cls):
+
+        reader = OurAirports.runways()
+        if reader:
+            
+            database = sqlite3.connect(DATABASE_PATH)
+            cursor = database.cursor()
+
+            cursor.execute("DROP TABLE IF EXISTS runways;")
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS runways (
+                    id INTEGER PRIMARY KEY,
+                    airport INTEGER NOT NULL,
+                    surface TEXT,
+                    lighted BOOLEAN NOT NULL DEFAULT FALSE,
+                    closed BOOLEAN NOT NULL DEFAULT FALSE,
+                    le_ident TEXT,
+                    he_ident TEXT,
+                    length REAL,
+                    width REAL,
+                    le_latitude REAL,
+                    le_longitude REAL,
+                    le_elevation REAL,
+                    le_heading REAL,
+                    le_displaced_threshold REAL,
+                    he_latitude REAL,
+                    he_longitude REAL,
+                    he_elevation REAL,
+                    he_heading REAL,
+                    he_displaced_threshold REAL,
+
+                    FOREIGN KEY (airport) REFERENCES airports(id)
+                );
+            """)
+
+            for row in reader:
+
+                for elem in row:
+                    if row[elem] == "":
+                        row[elem] = None
+
+                row['id'] = int(row['id'])
+                row['airport'] = int(row['airport_ref'])
+
+                del row['airport_ref']
+                del row['airport_ident']
+
+                for elem in list(row.keys()):
+                    if "_ft" in elem:
+                        if row[elem]:
+                            row[elem.replace("_ft", "")] = float(row[elem]) / 3.28084
+                        else:
+                            row[elem.replace("_ft", "")] = None
+                        del row[elem]
+
+                    if "_deg" in elem:
+                        new_elem = elem.replace("_degT", "")
+                        new_elem = new_elem.replace("_deg", "")
+                        if row[elem]:
+                            row[new_elem] = float(row[elem])
+                        else:
+                            row[new_elem] = None
+                        del row[elem]
+
+
+                for elem in ["closed", "lighted"]:
+                    row[elem] = row[elem] == "1"
+
+                cursor.execute("""
+                    INSERT INTO runways (
+                        id, airport, surface, lighted, closed,
+                        le_ident, he_ident, length, width,
+                        le_latitude, le_longitude, le_elevation, le_heading, le_displaced_threshold,
+                        he_latitude, he_longitude, he_elevation, he_heading, he_displaced_threshold
+                    ) VALUES (
+                        :id, :airport, :surface, :lighted, :closed,
+                        :le_ident, :he_ident, :length, :width,
+                        :le_latitude, :le_longitude, :le_elevation, :le_heading, :le_displaced_threshold,
+                        :he_latitude, :he_longitude, :he_elevation, :he_heading, :he_displaced_threshold
+                    );
+                """, row)
+
+            database.commit()
+            database.close()
+            print("Runway updated !")
+
+    @classmethod
+    @lru_cache(maxsize=None)
+    def from_airport_id(cls, id: int):
+
+        database = sqlite3.connect(DATABASE_PATH)
+        database.row_factory = sqlite3.Row
+        cursor = database.cursor()
+        cursor.execute("SELECT * FROM runways WHERE airport = ?", (id,))
+
+        runway_list = []
+        for row in cursor.fetchall():
+            runway_list.append(Runway(dict(row)))
+
+        database.close()
+
+        return runway_list
+
+    def __init__(self, data):
+        self.data = data
+
+    def __str__(self):
+        return f"Runway({self.data["le_ident"]}-{self.data["he_ident"]})"
+
+    def __repr__(self):
+        return str(self)

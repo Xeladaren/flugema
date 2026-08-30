@@ -1,2 +1,2 @@
-def main() -> None:
-    print("Hello from flugema!")
+
+from .main import main

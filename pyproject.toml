@@ -1,13 +1,13 @@
 [project]
 name = "flugema"
-version = "0.1.0"
+version = "0.2.0"
 description = "A web tool, for Private pilots."
 readme = "README.md"
 authors = [
     { name = "Xeladaren", email = "xeladaren@pm.me" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = ["nicegui", "pywebview", "plotly", "matplotlib", "gpxpy", "argon2-cffi"]
 
 [project.scripts]
 flugema = "flugema:main"

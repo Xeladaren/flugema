@@ -1,0 +1,29 @@
+{
+  "name": "Flugema",
+  "short_name": "Flugema",
+  "description": "A flight logbook",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#5898d4",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-618x618.png",
+      "sizes": "618x618",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
