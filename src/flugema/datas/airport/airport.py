@@ -12,6 +12,9 @@ from .ourairports   import OurAirports
 
 from ...utils.geo import GeoPos
 
+import logging
+logger = logging.getLogger(__name__)
+
 NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
 DATABASE_PATH = os.path.join(NICEGUI_STORAGE_PATH, "database.db")
 
@@ -86,7 +89,7 @@ class Airport():
 
             database.commit()
             database.close()
-            print("Airports updated !")
+            logger.info("Airports updated !")
 
     @classmethod
     def from_icao(cls, icao_code: str):

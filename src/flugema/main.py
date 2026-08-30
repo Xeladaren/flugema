@@ -6,6 +6,7 @@ import os
 import json
 import hashlib
 import secrets
+import logging
 
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -14,6 +15,13 @@ from . import pages
 from .datas.airport import update_all as update_all_airports
 from .datas.users import User
 from .datas import install_database
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(name)s: %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 def check_credentials(username: str, password: str):
     """Vérifie les credentials et redirige si valides"""
@@ -151,7 +159,7 @@ def main() -> None:
 
     update_all_airports()
     install_database()
-    print("All Databases created!", flush=True)
+    logger.info("All Databases created!")
 
     assets_dir = os.path.join(os.path.dirname(__file__), "assets")
 
@@ -162,9 +170,11 @@ def main() -> None:
 
     HOST       = os.environ.get("FLUGEMA_HOST", "127.0.0.1")
     PORT       = int(os.environ.get("FLUGEMA_PORT", 8080))
+    ALLOW_IPS  = os.environ.get('FLUGEMA_ALLOW_IPS', '127.0.0.1')
     SECRET_KEY = get_secret_key()
 
     try:
+        logger.info(f"Server started on {HOST}:{PORT}")
         ui.run(
             storage_secret=SECRET_KEY, 
             reload=False, 
@@ -172,10 +182,13 @@ def main() -> None:
             title="Flugema", 
             port=PORT,
             host=HOST,
+            proxy_headers=True,
+            forwarded_allow_ips=ALLOW_IPS,
+            show_welcome_message=False,
             favicon=os.path.join(assets_dir, "icons", "favicon.ico")
         )
     except KeyboardInterrupt:
-        print("Exit App.")
+        logger.info("Exit App.")
 
 if __name__ in {"__main__", "__mp_main__"}:
     main()

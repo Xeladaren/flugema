@@ -3,7 +3,7 @@ import os
 import sqlite3
 import datetime
 
-from nicegui import app
+from nicegui import app, context
 from argon2 import PasswordHasher
 
 from functools import lru_cache
@@ -11,6 +11,9 @@ from functools import lru_cache
 from ..utils.geo import GeoPos
 from ..utils.time import datetime_from_db_str
 from ..datas.airport import Airport
+
+import logging
+logger = logging.getLogger(__name__)
 
 NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
 DATABASE_PATH = os.path.join(NICEGUI_STORAGE_PATH, "database.db")
@@ -104,6 +107,13 @@ class User():
                 user = None
         else:
             user = None
+
+        ip_client = context.client.request.client.host
+
+        if user:
+            logger.info(f"Connection of '{user}' from {ip_client}")
+        else:
+            logger.warn(f"Invalid connection of '{login}' from {ip_client}")
 
         database.commit()
         database.close()

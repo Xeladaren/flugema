@@ -10,6 +10,9 @@ from functools import lru_cache
 
 from .ourairports import OurAirports
 
+import logging
+logger = logging.getLogger(__name__)
+
 NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
 DATABASE_PATH = os.path.join(NICEGUI_STORAGE_PATH, "database.db")
 
@@ -64,7 +67,7 @@ class Country():
 
             database.commit()
             database.close()
-            print("Countries updated !")
+            logger.info("Countries updated !")
 
     @classmethod
     @lru_cache(maxsize=None)
