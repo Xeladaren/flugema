@@ -133,12 +133,15 @@ async def build_flight_page(id: int):
                             'x': x,
                             'y': y1,
                             "marker": {
-                                "color": 'blue',
+                                "color": '#0077FF',
                             }
                         }
                     ],
                     'layout': {
-                        'margin': {'l': 50, 'r': 0, 't': 50, 'b': 50},
+                        'margin': {'l': 30, 'r': 10, 't': 40, 'b': 30},
+                        'xaxis': {},
+                        'yaxis': {},
+                        'showlegend': False,
                     },
                 }
                 if y2:
@@ -148,9 +151,19 @@ async def build_flight_page(id: int):
                             'x': x,
                             'y': y2,
                             "marker": {
-                                "color": 'green',
+                                "color": '#00BB00',
                             }
                     })
+                
+                if app.storage.user.get("dark_mode", False):
+                    fig["layout"]["paper_bgcolor"] = "#121212"
+                    fig["layout"]["plot_bgcolor"]  = "#121212"
+                    fig["layout"]["xaxis"]["color"]  = "#BBBBBB"
+                    fig["layout"]["yaxis"]["color"]  = "#BBBBBB"
+                    fig["layout"]["xaxis"]["gridcolor"]  = "#555555"
+                    fig["layout"]["yaxis"]["gridcolor"]  = "#555555"
+
+
                 ui.plotly(fig).classes('w-full h-full')
             else:
                 ui.label("No altitudes Datas")
@@ -160,7 +173,10 @@ async def build_flight_page(id: int):
 
             # m.clear_layers()
             if user.openapi_apikey:
-                m.tile_layer(url_template=fr"https://api.tiles.openaip.net/api/data/openaip/{{z}}/{{x}}/{{y}}.png?apiKey={user.openapi_apikey}")
+                m.tile_layer(
+                    url_template=fr"https://api.tiles.openaip.net/api/data/openaip/{{z}}/{{x}}/{{y}}.png?apiKey={user.openapi_apikey}",
+                    options={"attribution": "<a href='https://www.openaip.net/'>OpenAIP</a>"}
+                )
 
             m.generic_layer(name='polyline', args=[geo_path.position_list, {'color': '#30AFFF'}])
 
