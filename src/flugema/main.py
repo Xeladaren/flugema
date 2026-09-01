@@ -169,6 +169,7 @@ def main() -> None:
 
     app.add_static_file(url_path="/manifest.json", local_file=os.path.join(assets_dir,  "manifest.json"))
     app.add_static_files(url_path="/icons", local_directory=os.path.join(assets_dir, "icons"))
+    app.add_static_files(url_path="/weather-icons", local_directory=os.path.join(assets_dir, "weather-icons"))
 
     ui.add_head_html('<link rel="manifest" href="/manifest.json" />', shared=True)
 

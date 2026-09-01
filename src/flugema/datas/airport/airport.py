@@ -10,6 +10,7 @@ from .runway        import Runway
 from .frequency     import Frequency
 from .ourairports   import OurAirports
 
+from ..openmeteo import OpenMeteo
 from ...utils.geo import GeoPos
 
 import logging
@@ -175,3 +176,7 @@ class Airport():
     @property
     def municipality(self):
         return self.data["municipality"]
+
+    @property
+    def current_weather(self):
+        return OpenMeteo.current(self.position)
