@@ -19,8 +19,13 @@ def build_home_page():
         with ui.row():
             ui.image(OpenMeteo.weather_picture(weather_code, is_day)).style("width:60px")
             ui.label(home_airport.icao_code).classes('text-h4').style("margin-top: 10px;")
+
         ui.label(home_airport.name).classes('text-h6')
         ui.label(home_weather['time'].replace("T", " ")+" UTC")
+
+        if home_airport.runways:
+            runway = home_airport.runways[0]
+            ui.html(runway.trace_runway(wind_dir=home_weather['wind_direction_10m']))
 
         with ui.grid(columns=2).classes('mx-auto'):
             ui.label("Temperature:")

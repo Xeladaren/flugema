@@ -5,6 +5,9 @@ import io
 import os.path
 import sqlite3
 import urllib
+import drawsvg
+import math
+from io import StringIO
 
 from functools import lru_cache
 
@@ -130,3 +133,53 @@ class Runway():
 
     def __repr__(self):
         return str(self)
+
+    def __getattr__(self, name: str):
+        if name in self.data:
+            return self.data[name]
+        raise AttributeError(f"Attribut '{name}' not found.")
+
+    def trace_runway(self, wind_dir: int | None = None):
+
+        draw = drawsvg.Drawing(200, 200, origin='center')
+        runway_group = drawsvg.Group(transform=f"rotate({self.le_heading} 0 0)")
+
+        runway_group.append(drawsvg.Rectangle(-20, -90, 40, 180, fill='#202020', stroke='#EEEEEE'))
+        runway_group.append(drawsvg.Line(0, -40, 0, 40, stroke_width=2, stroke='#EEEEEE', stroke_dasharray="6, 6"))
+
+        le_group = drawsvg.Group(transform="rotate(0 0 0)")
+        he_group = drawsvg.Group(transform="rotate(180 0 0)")
+
+        
+        le_group.append(drawsvg.Text(self.le_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
+        he_group.append(drawsvg.Text(self.he_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
+
+        for pos in [-10, -4, 4, 10]:
+            le_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
+            he_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
+
+        runway_group.append(le_group)
+        runway_group.append(he_group)
+        draw.append(runway_group)
+
+        if wind_dir != None:
+
+            wind_tail = drawsvg.Marker(0, 0, 1, 1, scale=1, orient="auto-start-reverse", overflow="visible")
+            wind_tail.append(drawsvg.Path(
+                fill="none", 
+                stroke="context-stroke", 
+                stroke_width=0.8, 
+                stroke_linecap="round")
+                .m(-2, -2).append('', -2, 2).append('', 2, 2)
+                .M(0, -2).append('', -2, 0).append('', 0, 2)
+                .M(2, 2).append('', 0, 0).append('', 2, -2)
+            )
+
+            x =  70 * math.sin(math.radians(wind_dir))
+            y =  -70 * math.cos(math.radians(wind_dir))
+            draw.append(drawsvg.Line(0, 0, x, y, marker_end=wind_tail, stroke_width=2, stroke='#0088FF', stroke_linecap="round"))
+
+        data = StringIO()
+        draw.as_svg(data, header="")
+
+        return data.getvalue().replace("\n", "")

@@ -1,6 +1,7 @@
 
 import os.path
 import sqlite3
+import datetime
 
 from functools import lru_cache
 
@@ -123,7 +124,6 @@ class Airport():
     def __init__(self, data):
 
         data["id"] = int(data["id"])
-
         data["position"] = GeoPos(data["latitude"], data["longitude"], data["elevation"])
 
         del data["latitude"]
@@ -135,6 +135,8 @@ class Airport():
         self.freqencies = Frequency.from_airport_id(data["id"])
         self.region = Region.from_iso_code(data["iso_region"])
         self.country = Country.from_iso_code(data["iso_country"])
+
+        self._current_weather = None
 
     def __eq__(self, other):
         if type(other) == int:
@@ -150,13 +152,10 @@ class Airport():
     def __repr__(self):
         return f"Airport(id={self.id}, ident={self.data["ident"]})"
 
-    @property
-    def id(self):
-        return self.data["id"]
-
-    @property
-    def name(self):
-        return self.data["name"]
+    def __getattr__(self, name: str):
+        if name in self.data:
+            return self.data[name]
+        raise AttributeError(f"Attribut '{name}' not found.")
 
     @property
     def icao_code(self):
@@ -164,19 +163,24 @@ class Airport():
             return self.data["icao_code"]
         else:
             return self.data["ident"]
-
-    @property
-    def position(self):
-        return self.data["position"]
     
     @property
     def continent(self):
         return continent[self.data["continent"]]
 
     @property
-    def municipality(self):
-        return self.data["municipality"]
-
-    @property
     def current_weather(self):
-        return OpenMeteo.current(self.position)
+
+        if not self._current_weather:
+            self._current_weather = OpenMeteo.current(self.position)
+            logger.info(f"Get new weather info to {self.icao_code}")
+        else:
+            date_now     = datetime.datetime.now(tz=datetime.UTC)
+            date_expire  = datetime.datetime.fromisoformat(self._current_weather["time"]+"Z")
+            date_expire += datetime.timedelta(seconds=self._current_weather["interval"])
+
+            if date_now > date_expire:
+                self._current_weather = OpenMeteo.current(self.position)
+                logger.info(f"Get new weather info to {self.icao_code}")
+
+        return self._current_weather
