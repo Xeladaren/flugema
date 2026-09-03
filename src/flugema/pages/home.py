@@ -25,7 +25,11 @@ def build_home_page():
 
         if home_airport.runways:
             runway = home_airport.runways[0]
-            ui.html(runway.trace_runway(wind_dir=home_weather['wind_direction_10m']))
+            ui.html(runway.trace_runway(
+                wind_dir=home_weather['wind_direction_10m'],
+                wind_speed=home_weather['wind_speed_10m'],
+                south_lat=home_airport.position.latitude < 0
+            ))
 
         with ui.grid(columns=2).classes('mx-auto'):
             ui.label("Temperature:")

@@ -12,6 +12,7 @@ from io import StringIO
 from functools import lru_cache
 
 from .ourairports import OurAirports
+from ...utils.svg import marker_wind_barb
 
 import logging
 logger = logging.getLogger(__name__)
@@ -139,7 +140,7 @@ class Runway():
             return self.data[name]
         raise AttributeError(f"Attribut '{name}' not found.")
 
-    def trace_runway(self, wind_dir: int | None = None):
+    def trace_runway(self, wind_dir: int | None = None, wind_speed: int | None = None, south_lat: bool = False):
 
         draw = drawsvg.Drawing(200, 200, origin='center')
         runway_group = drawsvg.Group(transform=f"rotate({self.le_heading} 0 0)")
@@ -163,21 +164,16 @@ class Runway():
         draw.append(runway_group)
 
         if wind_dir != None:
+            
+            wind_marker = marker_wind_barb(wind_speed, south_lat)
 
-            wind_tail = drawsvg.Marker(0, 0, 1, 1, scale=1, orient="auto-start-reverse", overflow="visible")
-            wind_tail.append(drawsvg.Path(
-                fill="none", 
-                stroke="context-stroke", 
-                stroke_width=0.8, 
-                stroke_linecap="round")
-                .m(-2, -2).append('', -2, 2).append('', 2, 2)
-                .M(0, -2).append('', -2, 0).append('', 0, 2)
-                .M(2, 2).append('', 0, 0).append('', 2, -2)
-            )
-
-            x =  70 * math.sin(math.radians(wind_dir))
-            y =  -70 * math.cos(math.radians(wind_dir))
-            draw.append(drawsvg.Line(0, 0, x, y, marker_end=wind_tail, stroke_width=2, stroke='#0088FF', stroke_linecap="round"))
+            if wind_marker:
+                x =  70 * math.sin(math.radians(wind_dir))
+                y =  -70 * math.cos(math.radians(wind_dir))
+                draw.append(drawsvg.Line(0, 0, x, y, marker_end=wind_marker, stroke_width=2, stroke='#0088FF', stroke_linecap="round"))
+            else:
+                draw.append(drawsvg.Circle(0, 0, 10, fill="none", stroke_width=2, stroke='#0088FF'))
+                draw.append(drawsvg.Circle(0, 0, 15, fill="none", stroke_width=2, stroke='#0088FF'))
 
         data = StringIO()
         draw.as_svg(data, header="")
