@@ -140,24 +140,43 @@ class Runway():
             return self.data[name]
         raise AttributeError(f"Attribut '{name}' not found.")
 
+    @property
+    def paved(self):
+        return self.surface in [
+            "ASP",
+            "MAC",
+            "CON",
+            "BIT",
+            "ASPH",
+            "paved"
+        ]
+
     def trace_runway(self, wind_dir: int | None = None, wind_speed: int | None = None, south_lat: bool = False):
 
         draw = drawsvg.Drawing(200, 200, origin='center')
         runway_group = drawsvg.Group(transform=f"rotate({self.le_heading} 0 0)")
 
-        runway_group.append(drawsvg.Rectangle(-20, -90, 40, 180, fill='#202020', stroke='#EEEEEE'))
-        runway_group.append(drawsvg.Line(0, -40, 0, 40, stroke_width=2, stroke='#EEEEEE', stroke_dasharray="6, 6"))
+        if self.paved:
+            runway_group.append(drawsvg.Rectangle(-20, -90, 40, 180, fill='#202020', stroke='#EEEEEE'))
+            runway_group.append(drawsvg.Line(0, -40, 0, 40, stroke_width=2, stroke='#EEEEEE', stroke_dasharray="6, 6"))
+        else:
+            runway_group.append(drawsvg.Rectangle(-20, -90, 40, 180, fill='#006000', stroke='#EEEEEE'))
 
         le_group = drawsvg.Group(transform="rotate(0 0 0)")
         he_group = drawsvg.Group(transform="rotate(180 0 0)")
-
         
-        le_group.append(drawsvg.Text(self.le_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
-        he_group.append(drawsvg.Text(self.he_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
+        if self.paved:
+            le_group.append(drawsvg.Text(self.le_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
+            he_group.append(drawsvg.Text(self.he_ident, x=0, y=60, text_anchor='middle', font_size=20, fill='#EEEEEE'))
+        else:
+            le_group.append(drawsvg.Text(self.le_ident, x=0, y=80, text_anchor='middle', font_size=20, fill='#00FF00'))
+            he_group.append(drawsvg.Text(self.he_ident, x=0, y=80, text_anchor='middle', font_size=20, fill='#00FF00'))
 
-        for pos in [-10, -4, 4, 10]:
-            le_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
-            he_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
+
+        if self.paved:
+            for pos in [-10, -4, 4, 10]:
+                le_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
+                he_group.append(drawsvg.Line(pos, 80, pos, 65, stroke_width=3, stroke='#EEEEEE'))
 
         runway_group.append(le_group)
         runway_group.append(he_group)
@@ -172,6 +191,11 @@ class Runway():
                 y =  -70 * math.cos(math.radians(wind_dir))
                 draw.append(drawsvg.Line(0, 0, x, y, marker_end=wind_marker, stroke_width=2, stroke='#0088FF', stroke_linecap="round"))
             else:
+                x1 =  10 * math.sin(math.radians(wind_dir))
+                y1 =  -10 * math.cos(math.radians(wind_dir))
+                x2 =  15 * math.sin(math.radians(wind_dir))
+                y2 =  -15 * math.cos(math.radians(wind_dir))
+                draw.append(drawsvg.Line(x1, y1, x2, y2, marker_end=wind_marker, stroke_width=2, stroke='#0088FF', stroke_linecap="round"))
                 draw.append(drawsvg.Circle(0, 0, 10, fill="none", stroke_width=2, stroke='#0088FF'))
                 draw.append(drawsvg.Circle(0, 0, 15, fill="none", stroke_width=2, stroke='#0088FF'))
 
@@ -179,3 +203,20 @@ class Runway():
         draw.as_svg(data, header="")
 
         return data.getvalue().replace("\n", "")
+
+    def cross_wind(self, wind_speed: float, wind_dir: float) -> tuple[str, float, float]:
+
+        le_wind_angle = abs((self.le_heading - wind_dir + 180.0) % 360.0 - 180.0)
+        he_wind_angle = abs((self.he_heading - wind_dir + 180.0) % 360.0 - 180.0)
+
+        wind_angle = min(le_wind_angle, he_wind_angle)
+
+        if le_wind_angle == wind_angle:
+            ident = self.le_ident
+        else:
+            ident = self.he_ident
+
+        cross_wind = wind_speed * math.sin(math.radians(wind_angle))
+        front_wind = wind_speed * math.cos(math.radians(wind_angle))
+        
+        return ident, front_wind, cross_wind

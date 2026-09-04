@@ -3,7 +3,6 @@ import drawsvg
 
 def marker_wind_barb(wind_speed: int, south_lat: bool = False) -> None | drawsvg.Marker:
     wind_rounded = int(5 * round(wind_speed / 5))
-    print(wind_speed, wind_rounded)
 
     if wind_rounded == 0:
         return None

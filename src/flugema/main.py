@@ -65,6 +65,11 @@ def global_configs(is_auth=False):
     with ui.header().classes(replace='row items-center') as header:
         if is_auth:
             ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white')
+
+        utc_hour = ui.label()
+        ui.timer(1.0, lambda: utc_hour.set_text(
+            f"{datetime.datetime.now(tz=datetime.UTC):%X} UTC"
+        ))
         
         ui.space()
         ui.button(on_click=lambda e: switch_dark(e, dark_mode), icon=mode_icon).props('flat color=white')

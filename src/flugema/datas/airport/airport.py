@@ -184,3 +184,20 @@ class Airport():
                 logger.info(f"Get new weather info to {self.icao_code}")
 
         return self._current_weather
+
+    def best_runway(self, wind_speed: float, wind_dir: float) -> Runway | None:
+
+        if len(self.runways) == 0:
+            return None
+
+        best_runway = None
+        best_crosswind = 10000
+
+        for runway in self.runways:
+            if not runway.closed and runway.le_heading != None and runway.he_heading != None:
+                _, _, crosswind = runway.cross_wind(wind_speed, wind_dir)
+                if crosswind < best_crosswind:
+                    best_runway = runway
+                    best_crosswind = crosswind
+
+        return best_runway
