@@ -4,15 +4,17 @@ from ..datas.users import User
 from ..datas import Airport, OpenMeteo
 
 from ..utils.weather import dew_point
+from ..utils.time import print_hour
 
 
 def build_home_page():
     ui.page_title("Flugema")
 
     user = User.from_storage()
+    home_weather_wiget(user)
 
-    # ui.label(f'Bienvenue {user.full_name}').classes('text-h4').classes('mx-auto')
 
+def home_weather_wiget(user):
     with ui.card(align_items="center").style("width:300px").classes('mx-auto'):
         home_airport = user.home_airport
         home_weather = home_airport.current_weather
@@ -26,19 +28,33 @@ def build_home_page():
         ui.label(home_airport.name).classes('text-h6')
         ui.label(home_weather['time'].replace("T", " ")+" UTC")
 
+        astro_info = home_airport.current_astro()
+        if astro_info:
+            with ui.row().style("margin: 0; padding: 0;"):
+                ui.label(print_hour(astro_info['sunrise'][0])).style("margin-top: 5px;")
+                ui.html("<span class='material-symbols-outlined'>stat_1</span>").style("margin-top: 5px;")
+                ui.image("/weather-icons/horizon.svg").style("width:50px")
+                ui.html("<span class='material-symbols-outlined'>stat_minus_1</span>").style("margin-top: 5px;")
+                ui.label(print_hour(astro_info['sunset'][0])).style("margin-top: 5px;")
+
+            with ui.row().style("margin: 0; padding: 0;"):
+                ui.label(print_hour(astro_info['moonrise'][0])).style("margin-top: 5px;")
+                ui.html("<span class='material-symbols-outlined'>stat_1</span>").style("margin-top: 5px;")
+                ui.image(OpenMeteo.moon_picture(astro_info['moon_phase'][0])).style("width:50px")
+                ui.html("<span class='material-symbols-outlined'>stat_minus_1</span>").style("margin-top: 5px;")
+                ui.label(print_hour(astro_info['moonset'][0])).style("margin-top: 5px;")
+
         wind_speed = home_weather['wind_speed_10m']
         wind_dir = home_weather['wind_direction_10m']
         runway = home_airport.best_runway(wind_speed, wind_dir)
         if runway:
-            ident, front_wind, cross_wind = runway.cross_wind(wind_speed, wind_dir)
-
             ui.html(runway.trace_runway(
                 wind_dir=wind_dir,
                 wind_speed=wind_speed,
                 south_lat=home_airport.position.latitude < 0
             ))
 
-        with ui.grid(columns=2).classes('mx-auto'):
+        with ui.grid(columns=2).classes('mx-auto gap-y-2'):
             ui.label("Temperature:")
             ui.label(f"{home_weather['temperature_2m']} °C")
 
@@ -54,8 +70,10 @@ def build_home_page():
 
             ui.label("Wind Gusts:")
             ui.label(f"{home_weather['wind_gusts_10m']:.1f} kn")
-            
+
             if runway:
+                ident, front_wind, cross_wind = runway.cross_wind(wind_speed, wind_dir)
+
                 ui.label(f"Best runway:")
                 ui.label(f"{ident}")
 

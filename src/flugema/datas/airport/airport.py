@@ -137,6 +137,7 @@ class Airport():
         self.country = Country.from_iso_code(data["iso_country"])
 
         self._current_weather = None
+        self._current_astro = None
 
     def __eq__(self, other):
         if type(other) == int:
@@ -184,6 +185,25 @@ class Airport():
                 logger.info(f"Get new weather info to {self.icao_code}")
 
         return self._current_weather
+
+
+    def astro_info(self, start_date: str | None = None, stop_date: str | None = None):
+        return OpenMeteo.astro_infos(self.position, start_date, stop_date)
+
+    def current_astro(self):
+        if not self._current_astro:
+            self._current_astro = self.astro_info()
+            logger.info(f"Get new astro info to {self.icao_code}")
+
+        else:
+            date_now = datetime.datetime.now(tz=datetime.UTC).date()
+            date_astro = datetime.date.fromisoformat(self._current_astro["time"][0])
+
+            if date_now > date_astro:
+                self._current_astro = self.astro_info()
+                logger.info(f"Get new astro info to {self.icao_code}")
+
+        return self._current_astro
 
     def best_runway(self, wind_speed: float, wind_dir: float) -> Runway | None:
 

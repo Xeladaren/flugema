@@ -44,3 +44,11 @@ def datetime_from_db_str(date_str: str | None) -> datetime.datetime | None:
         return datetime.datetime.fromisoformat(date_str)
     else:
         return None
+
+def print_hour(date: datetime.datetime | str | None):
+    if type(date) == str:
+        date = datetime.datetime.fromisoformat(date)
+    if date:
+        return date.time().isoformat(timespec='minutes')
+    else:
+        return "--:--"
