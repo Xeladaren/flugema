@@ -176,6 +176,12 @@ def main() -> None:
     app.add_static_files(url_path="/icons", local_directory=os.path.join(assets_dir, "icons"))
     app.add_static_files(url_path="/weather-icons", local_directory=os.path.join(assets_dir, "weather-icons"))
 
+    ui.add_head_html('<meta name="description" content="A Flight tool for private pilots.">', shared=True)
+
+    ui.add_head_html('<meta name="og:title" content="Flugema">', shared=True)
+    ui.add_head_html('<meta name="og:description" content="A Flight tool for private pilots.">', shared=True)
+    ui.add_head_html('<meta name="og:image" content="/icons/icon.svg">', shared=True)
+
     ui.add_head_html('<link rel="manifest" href="/manifest.json" />', shared=True)
 
     HOST       = os.environ.get("FLUGEMA_HOST", "127.0.0.1")
