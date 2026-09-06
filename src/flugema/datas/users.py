@@ -265,3 +265,66 @@ class User():
             return True
         except:
             return False
+
+    @property
+    def flights(self):
+        from .flight import Flight
+        return Flight.get_user_flights(self.id)
+
+    def flights_stats(self):
+        from .flight import Flight
+
+        stats = {
+            "durations" : {
+                "total": 0,
+                "contition": {
+                    "day": 0,
+                    "night": 0,
+                    "ifr": 0
+                },
+                "function":{
+                    "pic": 0,
+                    "copilote": 0,
+                    "dual": 0,
+                    "instructor": 0
+                }
+            },
+            "landings":{
+                "day": 0,
+                "night": 0
+            },
+            "apch_ifr": 0,
+            "airports": [],
+            "farthest-airport": None
+        }
+
+        for flight in self.flights:
+            stats['durations']['total'] += flight.total_min
+            stats['durations']['contition']['day'] += (flight.total_min - flight.night_min)
+            stats['durations']['contition']['night'] += flight.night_min
+            stats['durations']['contition']['ifr'] += flight.ifr_min
+            stats['durations']['function'][flight.role] += flight.total_min
+
+            stats['landings']['day'] += flight.ldg_day
+            stats['landings']['night'] += flight.ldg_night
+            stats['apch_ifr'] += flight.apch_ifr
+
+            if not flight.departure in stats['airports']:
+                stats['airports'].append(flight.departure)
+
+            if not flight.arrival in stats['airports']:
+                stats['airports'].append(flight.arrival)
+
+            for touch in flight.touch_and_go:
+                if not touch['airport'] in stats['airports']:
+                    stats['airports'].append(touch['airport'])
+
+        for airport in stats['airports']:
+            if stats['farthest-airport']:
+                if airport.distance_to(self.home_airport) > stats['farthest-airport'].distance_to(self.home_airport):
+                    stats['farthest-airport'] = airport
+            else:
+                stats['farthest-airport'] = airport
+
+        return stats
+

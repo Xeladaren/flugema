@@ -128,8 +128,8 @@ class GeoPos:
         # Conversion des coordonnées en radians
         lat1_rad = radians(self._lat)
         lon1_rad = radians(self._lon)
-        lat2_rad = radians(other.lat)
-        lon2_rad = radians(other.lon)
+        lat2_rad = radians(other._lat)
+        lon2_rad = radians(other._lon)
 
         dlat = lat2_rad - lat1_rad
         dlon = lon2_rad - lon1_rad
@@ -142,7 +142,7 @@ class GeoPos:
 
         # Prise en compte de l'altitude
         try:
-            delta_alt = other.alt - self._alt
+            delta_alt = other._alt - self._alt
             total_distance = sqrt(ground_distance**2 + delta_alt**2)
         except:
             total_distance = ground_distance
@@ -159,8 +159,8 @@ class GeoPos:
 
         lat1_rad = radians(self._lat)
         lon1_rad = radians(self._lon)
-        lat2_rad = radians(other.lat)
-        lon2_rad = radians(other.lon)
+        lat2_rad = radians(other._lat)
+        lon2_rad = radians(other._lon)
 
         dlon = lon2_rad - lon1_rad
 

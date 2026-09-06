@@ -55,7 +55,7 @@ def build_logbook_page():
         {"name": "apch_ifr",        'field': 'apch_ifr',        "label": "IFR Approach"},
     ]
 
-    flights = [flight.formated_datas() for flight in Flight.get_user_flights(user.id)]
+    flights = [flight.formated_datas() for flight in user.flights]
 
     # with ui.card().classes('w-full h-full'):
     ui.table(columns=columns, rows=flights, row_key='id', pagination=0).classes('w-full sticky-header-table').on("row-click", lambda row: ui.navigate.to(f'/flight/{row.args[1]["id"]}'))

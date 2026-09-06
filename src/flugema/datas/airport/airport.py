@@ -221,3 +221,11 @@ class Airport():
                     best_crosswind = crosswind
 
         return best_runway
+
+    def distance_to(self, other: Airport | GeoPos, unit="m"):
+        if type(other) == Airport:
+            return self.position.distance_to(other.position, unit=unit)
+        elif type(other) == GeoPos:
+            return self.position.distance_to(other, unit=unit)
+        else:
+            raise TypeError("Invalid Positon type (need Airport or GeoPos)")
