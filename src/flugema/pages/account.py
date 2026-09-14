@@ -5,6 +5,9 @@ from nicegui import ui
 from ..datas import User, Airport
 from ..utils.password import PasswordChecker
 
+import logging
+logger = logging.getLogger(__name__)
+
 def build_account_page():
     ui.page_title("Flugema - Account")
 
@@ -131,6 +134,7 @@ def _update_password(user, old, new, confirm):
         ui.notify(f"{e}", type="negative")
     except Exception as e:
         ui.notify(f"{e.__class__.__name__}: {e}", type="negative")
+        logger.exception("Fail to update password.")
     else:
         ui.notify(f"Password changed", type="positive")
     finally:
@@ -148,6 +152,7 @@ def _update_datas(user_data, user):
         ui.notify(f"{e}", type="negative")
     except Exception as e:
         ui.notify(f"{e.__class__.__name__}: {e}", type="negative")
+        logger.exception("Fail to update User datas.")
     else:
         ui.notify(f"User infos changed", type="positive")
 
@@ -158,6 +163,7 @@ def _update_apis(user_data, user):
         ui.notify(f"{e}", type="negative")
     except Exception as e:
         ui.notify(f"{e.__class__.__name__}: {e}", type="negative")
+        logger.exception("Fail to update APIs.")
     else:
         ui.notify(f"User APIs changed", type="positive")
 

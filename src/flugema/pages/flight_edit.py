@@ -6,6 +6,9 @@ from ..datas import Airport, User, Flight, Airplane
 from ..utils.geo import GeoPath
 from ..utils.time import formated_min
 
+import logging
+logger = logging.getLogger(__name__)
+
 class AirplaneDataError(ValueError):
     pass
 
@@ -314,6 +317,7 @@ def validate_datas(datas: dict, flight: Flight | None = None):
         ui.notify(f"{e}", type="negative")
     except Exception as e:
         ui.notify(f"{e.__class__.__name__}: {e}", type="negative")
+        logger.exception("Flight edit data error.")
 
 async def file_uploaded(elem, datas):
     if elem.file.content_type == "application/gpx+xml":

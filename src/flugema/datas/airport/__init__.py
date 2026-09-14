@@ -16,4 +16,4 @@ def update_all():
         Region.update()
         Country.update()
     except Exception as e:
-        logger.error(f"Fail to update database: {e}")
+        logger.exception(f"Fail to update database: {e}")

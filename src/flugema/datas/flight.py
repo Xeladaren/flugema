@@ -67,37 +67,38 @@ class Flight():
 
     @classmethod
     def _get_db_datas(cls, data):
-        if not "user_id" in data:
-            data["user_id"] = data["user"].id
 
-        if not "departure_id" in data:
-            data["departure_id"] = data["departure"].id
+        data_out = {}
 
-        if not "arrival_id" in data:
-            data["arrival_id"] = data["arrival"].id
+        for key in data:
+            if key in {"user", "departure", "arrival", "airplane"}:
+                data_out[f"{key}_id"] = data[key].id
 
-        if not "airplane_id" in data:
-            data["airplane_id"] = data["airplane"].id
+            elif key in {"departure_time", "arrival_time"}:
+                data_out[key] = data[key].isoformat(timespec='minutes')
 
-        if type(data["departure_time"]) == datetime.datetime:
-            data["departure_time"] = data["departure_time"].isoformat(timespec='minutes')
+            elif key == "touch_and_go":
 
-        if type(data["arrival_time"]) == datetime.datetime:
-            data["arrival_time"] = data["arrival_time"].isoformat(timespec='minutes')
+                data_out[key] = []
+                for touch in data["touch_and_go"]:
+                    data_out[key].append({
+                        "airport_id": touch["airport"].id,
+                        "count": touch["count"]
+                    })
+    
+                data_out[key] = json.dumps(data_out[key])
 
-        if type(data["touch_and_go"]) == list:
-            for touch in data["touch_and_go"]:
-                touch["airport_id"] = touch["airport"].id
-                del touch["airport"]
-            data["touch_and_go"] = json.dumps(data["touch_and_go"])
+            else:
+                data_out[key] = data[key]
 
-        return data
+        return data_out
+
     @classmethod
     def new(cls, data):
         database = sqlite3.connect(DATABASE_PATH)
         cursor = database.cursor()
 
-        Flight._get_db_datas(data)
+        data = Flight._get_db_datas(data)
 
         cursor.execute("""
             INSERT INTO flights (
@@ -221,8 +222,7 @@ class Flight():
 
     def update(self):
 
-        data = deepcopy(self.data)
-        data = Flight._get_db_datas(data)
+        data = Flight._get_db_datas(self.data)
 
         database = sqlite3.connect(DATABASE_PATH)
         cursor = database.cursor()
