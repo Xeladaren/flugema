@@ -244,11 +244,16 @@ def build_flight_edit_page(id: int | None = None):
 
     with ui.button_group().classes('mx-auto'):
         ui.button('Save', icon="save", color="green", on_click=lambda: validate_datas(datas, flight))
-        ui.button('Cancel', icon="exit_to_app", color="orange", on_click=ui.navigate.back)
+        ui.button('Cancel', icon="exit_to_app", color="orange", on_click=lambda: cancel(datas))
 
 def check_data(datas, key, error_msg):
     if not key in datas or not datas[key]:
         raise AirplaneDataError(error_msg)
+
+def cancel(datas):
+    if "geo_path_file" in datas:
+        del datas["geo_path_file"]
+    ui.navigate.back()
 
 def validate_datas(datas: dict, flight: Flight | None = None):
 
@@ -300,8 +305,9 @@ def validate_datas(datas: dict, flight: Flight | None = None):
             check_data(datas, "airplane_type",   "The Airplane type are required for new planes.")
             datas["airplane"] = Airplane.new(datas["airplane_reg"], datas["airplane_type"])
 
-        if datas["geo_path"] and type(datas["geo_path"]) == GeoPath:
-            datas["geo_path"] = datas["geo_path"].to_storage()
+        if "geo_path_file" in datas and type(datas["geo_path_file"]) == GeoPath:
+            datas["geo_path"] = datas["geo_path_file"].to_storage()
+            del datas["geo_path_file"]
 
         del datas["airplane_type"]
         del datas["airplane_reg"]
@@ -320,12 +326,16 @@ def validate_datas(datas: dict, flight: Flight | None = None):
         logger.exception("Flight edit data error.")
 
 async def file_uploaded(elem, datas):
-    if elem.file.content_type == "application/gpx+xml":
+
+    try:
         str_data = await elem.file.text()
         gpx_file = io.StringIO(str_data)
         geo_path = GeoPath.from_gpx(gpx_file)
-        datas["geo_path"] = geo_path        
-
+        datas["geo_path_file"] = geo_path
+    except Exception as e:
+        ui.notify(f"Invalid GPX file type: {elem.file.name}", type="negative")
+        logger.error(f"Invalid GPX file type: {elem.file.name}, {elem.file.content_type}.")
+        elem.sender.reset()
 
 def value_chage(elem, datas, key):
     if elem.value:

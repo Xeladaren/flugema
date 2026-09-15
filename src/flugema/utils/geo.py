@@ -6,6 +6,10 @@ import os
 import hashlib
 import io
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
 GEOPATHS_DATA_DIR = os.path.join(NICEGUI_STORAGE_PATH, "geo-paths")
 
@@ -198,6 +202,7 @@ class GeoPath():
 
                     data.append(GeoPos(latitude, longitude, altitude=altitude, groud_altitude=gnd_altitude, date=date))
 
+        logger.debug(f"New GeoPath from GPX created (len={len(data)})")
         return GeoPath(data)
 
     @classmethod
@@ -223,6 +228,8 @@ class GeoPath():
 
         with open(file_path, "w") as geo_file:
             geo_file.write(str_data)
+
+        logger.debug(f"Save file {file_name} to storage")
 
         return file_name
 
