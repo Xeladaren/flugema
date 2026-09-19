@@ -1,10 +1,13 @@
 from nicegui import ui
+import pint
 
 from ..datas import User, Flight, Airport, OpenMeteo
 
-from ..utils.weather import dew_point
+from ..utils.weather import dew_point, pressure_altitude, density_altitude
 from ..utils.time import print_hour, formated_min
 
+ureg = pint.UnitRegistry()
+Quantity = ureg.Quantity
 
 def build_home_page():
     ui.page_title("Flugema")
@@ -112,15 +115,31 @@ def home_weather_widget(user):
             ))
 
         with ui.grid(columns=2).classes('mx-auto gap-y-2'):
-            ui.label("Temperature:")
-            ui.label(f"{home_weather['temperature_2m']} °C")
 
-            dew_point_val = dew_point(home_weather['temperature_2m'], home_weather['relative_humidity_2m'])
+            altitude = home_airport.position.altitude()
+            ui.label("Altitude:")
+            ui.label(f"{Quantity(altitude, "m").to("ft"):~P.0f}")
+
+            qnh = home_weather['pressure_msl']
+            press_alt = pressure_altitude(altitude, qnh)
+            ui.label("Pressure Altitude:")
+            ui.label(f"{Quantity(press_alt, "m").to("ft"):~P.0f}")
+
+            temp = home_weather['temperature_2m']
+            humidity = home_weather['relative_humidity_2m']
+            dens_alt = density_altitude(altitude, qnh, temp, humidity)
+            ui.label("Density Altitude:")
+            ui.label(f"{Quantity(dens_alt, "m").to("ft"):~P.0f}")
+
+            ui.label("Temperature:")
+            ui.label(f"{temp} °C")
+
+            dew_point_val = dew_point(temp, humidity)
             ui.label("Dew point:")
             ui.label(f"{dew_point_val:.1f} °C")
 
             ui.label("Pressure (QNH):")
-            ui.label(f"{home_weather['pressure_msl']} hPa")
+            ui.label(f"{qnh} hPa")
 
             ui.label("Wind:")
             ui.label(f"{wind_speed:.1f} kn ({wind_dir:.0f}°)")

@@ -7,7 +7,7 @@ authors = [
     { name = "Xeladaren", email = "xeladaren@pm.me" }
 ]
 requires-python = ">=3.14"
-dependencies = ["nicegui", "pywebview", "plotly", "matplotlib", "gpxpy", "argon2-cffi", "drawsvg"]
+dependencies = ["nicegui", "pywebview", "plotly", "matplotlib", "gpxpy", "argon2-cffi", "drawsvg", "pint"]
 
 [project.scripts]
 flugema = "flugema:main"
