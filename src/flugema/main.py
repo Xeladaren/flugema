@@ -205,6 +205,7 @@ def main() -> None:
         )
     except KeyboardInterrupt:
         logger.info("Exit App.")
+        os._exit(0)
 
 if __name__ in {"__main__", "__mp_main__"}:
     main()

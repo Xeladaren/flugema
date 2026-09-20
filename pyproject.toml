@@ -1,6 +1,6 @@
 [project]
 name = "flugema"
-version = "0.2.7"
+version = "0.2.8"
 description = "A web tool, for Private pilots."
 readme = "README.md"
 authors = [

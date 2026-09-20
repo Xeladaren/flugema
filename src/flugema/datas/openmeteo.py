@@ -106,8 +106,11 @@ class OpenMeteo():
             return None
 
     @classmethod
-    def moon_picture(cls, moon_phase:float) -> str:
+    def moon_picture(cls, moon_phase : float | None) -> str:
         
+        if moon_phase is None:
+            return "/weather-icons/not-available.svg"
+
         if moon_phase >= 0.9375:
             moon_icon = "moon-new"
         elif moon_phase >= 0.8125:
@@ -130,11 +133,12 @@ class OpenMeteo():
         return f"/weather-icons/{moon_icon}.svg"
 
     @classmethod
-    def weather_picture(cls, weather_code: int, day: bool = True) -> str:
+    def weather_picture(cls, weather_code: int | None, day: bool = True) -> str:
+
+        if weather_code is None:
+            return "/weather-icons/not-available.svg"
+
         icon_name = "not-available"
-
-        # icons from https://meteocons.com/
-
         codes_value = [
             ([0],               "clear-day",                        "clear-night"),
             ([1],               "mostly-clear-day",                 "mostly-clear-night"),

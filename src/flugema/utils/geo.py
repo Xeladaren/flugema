@@ -19,12 +19,20 @@ class GeoPos:
     def from_serialized(cls, data):
         return GeoPos(data["latitude"], data["longitude"], data["altitude"], data["groud-altitude"], data["date"])
 
-    def __init__(self, latitude: float, longitude: float, altitude: float | None = None, groud_altitude: float | None = None, date: datetime.datetime | None = None):
+    def __init__(self, 
+        latitude: float, 
+        longitude: float, 
+        altitude: float | None = None, 
+        groud_altitude: float | None = None, 
+        date: datetime.datetime | None = None, 
+        accuracy: float | None = None
+    ):
         self._lat = latitude
         self._lon = longitude
         self._alt = altitude
         self._gnd_alt = groud_altitude
         self._date = date
+        self._accuracy = accuracy
 
     def __repr__(self):
         return f"GeoPos({self._lat}, {self._lon}, {self._alt})"
@@ -66,7 +74,10 @@ class GeoPos:
             return f"{self._lat:.6} {self._lon:.6}"
 
     def __str__(self):
-        return f"{self:deg}"
+        if self._accuracy:
+            return f"{self:deg} (±{self._accuracy} m)"
+        else:
+            return f"{self:deg}"
 
     @property
     def raw(self):

@@ -120,6 +120,28 @@ class Airport():
         database.close()
 
         return Airport(dict(result)) if result else None
+    
+    @classmethod
+    def nearest(cls, pos: GeoPos, icao_only: bool = False) -> Airport | None:
+        database = sqlite3.connect(DATABASE_PATH)
+
+        cursor = database.cursor()
+        cursor.execute("SELECT id, latitude, longitude, icao_code FROM airports")
+
+        nearest_dist = None
+        nearest_id = None
+
+        for result in cursor.fetchall():
+            if not icao_only or not result[3] is None:
+                res_pos = GeoPos(result[1], result[2])
+                distance_to = pos.distance_to(res_pos)
+                if nearest_dist == None or nearest_dist > distance_to:
+                        nearest_dist = distance_to
+                        nearest_id = result[0]
+
+        database.close()
+
+        return Airport.from_id(nearest_id) if nearest_id else None
 
     def __init__(self, data):
 
@@ -174,7 +196,7 @@ class Airport():
 
         if not self._current_weather:
             self._current_weather = OpenMeteo.current(self.position)
-            logger.info(f"Get new weather info to {self.icao_code}")
+            logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
         else:
             date_now     = datetime.datetime.now(tz=datetime.UTC)
             date_expire  = datetime.datetime.fromisoformat(self._current_weather["time"]+"Z")
@@ -182,7 +204,7 @@ class Airport():
 
             if date_now > date_expire:
                 self._current_weather = OpenMeteo.current(self.position)
-                logger.info(f"Get new weather info to {self.icao_code}")
+                logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
 
         return self._current_weather
 
@@ -193,7 +215,7 @@ class Airport():
     def current_astro(self):
         if not self._current_astro:
             self._current_astro = self.astro_info()
-            logger.info(f"Get new astro info to {self.icao_code}")
+            logger.info(f"Get new astro info to {self.icao_code} ({self._current_astro['time'][0]})")
 
         else:
             date_now = datetime.datetime.now(tz=datetime.UTC).date()
