@@ -13,6 +13,10 @@ from ..utils.time import formated_min
 from .airport import Airport
 from .airplane import Airplane
 from .users import User
+from .picture import Picture
+
+import logging
+logger = logging.getLogger(__name__)
 
 NICEGUI_STORAGE_PATH = os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')
 DATABASE_PATH = os.path.join(NICEGUI_STORAGE_PATH, "database.db")
@@ -142,7 +146,7 @@ class Flight():
         cursor = database.cursor()
 
         cursor.execute("SELECT id FROM flights WHERE user_id = ? ORDER BY departure_time DESC", (user_id,))
-        
+
         flights_list = []
         for result in cursor.fetchall():
             if result:
@@ -303,11 +307,6 @@ class Flight():
         else:
             return None
 
-    def __getattr__(self, name: str):
-        if name in self.data:
-            return self.data[name]
-        raise AttributeError(f"Attribut '{name}' not found.")
-
     @property
     def date(self):
         return self.data["departure_time"].date()
@@ -346,3 +345,16 @@ class Flight():
             raw_data.append(self.arrival.position)
 
             return GeoPath(raw_data)
+
+    @property
+    def pictures(self):
+        try:
+            picture_list = Picture.from_flight(self)
+            return picture_list
+        except Exception as e:
+            return []
+
+    def __getattr__(self, name: str):
+        if name in self.data:
+            return self.data[name]
+        raise AttributeError(f"Attribut '{name}' not found.")

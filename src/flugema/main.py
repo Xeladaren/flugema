@@ -8,12 +8,14 @@ import hashlib
 import secrets
 import logging
 
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import HTTPException
+from fastapi.responses import FileResponse
 
 from . import pages
 
 from .datas.airport import update_all as update_all_airports
 from .datas.users import User
+from .datas.picture import Picture
 from .datas import install_database
 
 logging.basicConfig(
@@ -156,6 +158,22 @@ async def page_flight_id(id: int):
     if check_auth():
         global_configs(is_auth=True)
         await pages.build_flight_page(id)
+
+@app.get('/picture/{id}')
+def get_picture(id: int):
+    if app.storage.user.get('authenticated', False):
+        picture = Picture.from_id(id)
+        user = User.from_storage()
+        if picture:
+            if picture.flight.user == user:
+                return FileResponse(picture.path)
+            else:
+                raise HTTPException(401)
+        else:
+            raise HTTPException(404)
+    else:
+        raise HTTPException(401)
+
 
 def get_secret_key() -> str:
     """Return FLUGEMA_SECRET_KEY, or generate one and persist it in DATA_DIR."""
