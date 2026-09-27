@@ -179,8 +179,8 @@ def tabpanel_map(user, flight, geo_path):
     for picture in flight.pictures:
         if picture.position:
             marker = m.marker(latlng=(picture.position.latitude, picture.position.longitude), options={'id': picture.id})
-            with ui.dialog().props('maximized') as dialog, ui.card().classes('w-full h-full flex items-center justify-center'):
-                ui.image(picture.url).classes('max-h-full')
+            with ui.dialog().props('maximized') as dialog, ui.card().classes('w-full h-full flex items-center justify-center bg-black'):
+                ui.image(picture.url).props('fit=contain').classes('w-full h-full')
                 ui.button(icon="close", on_click=dialog.close).classes('absolute right-4 top-4').props('flat color=white').classes('bg-black/25')
                 with ui.button_group().classes('absolute top-4').props('flat').classes('bg-black/25'):
                     ui.button(icon="download", on_click=partial(dl_image, picture)).props('flat color=white')
