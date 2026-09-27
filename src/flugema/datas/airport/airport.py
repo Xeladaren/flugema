@@ -196,7 +196,10 @@ class Airport():
 
         if not self._current_weather:
             self._current_weather = OpenMeteo.current(self.position)
-            logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
+            if self._current_weather:
+                logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
+            else:
+                logger.warning(f"Fail to get weather infos for {self.icao_code}.")
         else:
             date_now     = datetime.datetime.now(tz=datetime.UTC)
             date_expire  = datetime.datetime.fromisoformat(self._current_weather["time"]+"Z")
@@ -204,7 +207,10 @@ class Airport():
 
             if date_now > date_expire:
                 self._current_weather = OpenMeteo.current(self.position)
-                logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
+                if self._current_weather:
+                    logger.info(f"Get new weather info to {self.icao_code} ({self._current_weather['time']}Z)")
+                else:
+                    logger.warning(f"Fail to get weather infos for {self.icao_code}.")
 
         return self._current_weather
 
@@ -212,6 +218,7 @@ class Airport():
     def astro_info(self, start_date: str | None = None, stop_date: str | None = None):
         return OpenMeteo.astro_infos(self.position, start_date, stop_date)
 
+    @property
     def current_astro(self):
         if not self._current_astro:
             self._current_astro = self.astro_info()

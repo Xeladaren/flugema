@@ -151,9 +151,7 @@ class AirportWeatherWidget():
     def update(self):
         
         weather = self._airport.current_weather
-        is_day = weather['is_day'] != 0
-        weather_code = weather['weather_code']
-        astro_info = self._airport.current_astro()
+        astro_info = self._airport.current_astro
 
         if not weather or not astro_info:
             logger.warning(f"Fail to get weater datas of {self._airport.icao_code}.")
@@ -161,6 +159,9 @@ class AirportWeatherWidget():
             return
 
         logger.debug(f"Update weather of {self._airport.icao_code} (datas date : {weather['time']})")
+
+        is_day = weather['is_day'] != 0
+        weather_code = weather['weather_code']
 
         self._ui_elements["weather_code"].source = OpenMeteo.weather_picture(weather_code, is_day)
         self._ui_elements["icao_code"].text = self._airport.icao_code
