@@ -255,10 +255,11 @@ class User():
     def home_airport(self, value: Airport) -> None:
         self._update_value("home_airport", value.id if value else None, local_value=value)
 
-    def set_password(self, old_password: str, new_password: str):
+    def set_password(self, old_password: str, new_password: str, force: bool = False):
         try:
-            password_hash = self.data["password_hash"]
-            ph.verify(password_hash, old_password)
+            if not force:
+                password_hash = self.data["password_hash"]
+                ph.verify(password_hash, old_password)
             password_hash = ph.hash(new_password)
             self._update_value("password_hash", password_hash)
 
